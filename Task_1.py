@@ -5,7 +5,7 @@ def getEigen(matrix):
         return 1
 
     result = list()
-    eigenvalues, eigenvectors = np.linalg.eig(matrix)
+    eigenvalues, eigenvectors = np.linalg.eigh(matrix)
 
     for i in range(len(eigenvalues)):
         value = eigenvalues[i]
@@ -17,6 +17,6 @@ def getEigen(matrix):
         if not np.allclose(diff, 0, 1e-10):
             return 1
 
-        result.append((np.real(value), eigenvectors[i]))
+        result.append([value, eigenvectors[:, i]])
 
     return result
