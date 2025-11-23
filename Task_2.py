@@ -1,14 +1,15 @@
 import numpy as np
-import Task_1 as t1
 from matplotlib.image import imread
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 
-def cumulativeGraph(cumulative, comp):
-    points = np.array([[i, np.where(cumulative >= (i/100))[0][0] + 1] for i in range(1, 101)])
+def cumulativeGraph(cumulative, comp, percent):
+    max_percent = int(cumulative[-1] * 100)
+    points = np.array([[i, np.where(cumulative >= i / 100)[0][0] + 1] for i in range(1, max_percent + 1)])
 
     fig, ax = plt.subplots()
 
-    target_point = [points[comp - 1][1], points[comp - 1][0]]
+    target_point = [points[percent - 1][1], points[percent - 1][0]]
     ax.axline(xy1=target_point, xy2=(0, target_point[1]), linestyle='--', color='red')
     ax.axline(xy1=target_point, xy2=(target_point[0], 0), linestyle='--', color='green')
     plt.annotate(f'{target_point[0]}', xy=target_point)
@@ -17,33 +18,10 @@ def cumulativeGraph(cumulative, comp):
 
     plt.show()
 
-def pca(image_bw, comp):
-    # standardization of data
-    image_standard = image_bw - np.mean(image_bw, axis=0)
-
-    # find covariance matrix and eigen
-    covar_image = np.cov(image_standard, rowvar=False)
-    eigen = np.array(t1.getEigen(covar_image), dtype=object)
-
-    # sort and take 95%
-    indexes = np.argsort(eigen[:, 0])[::-1]
-    eigen = eigen[indexes]
-
-    cumulative = np.cumsum(eigen[:, 0]) / np.sum(eigen[:, 0])
-    k = np.where(cumulative >= (comp/100))[0][0] + 1
-    cumulativeGraph(cumulative, comp)
-
-    transform_matrix = eigen[:, 1]
-    transform_matrix = np.array([el for el in transform_matrix[:k]]).T
-
-    final_image = image_standard @ transform_matrix
-    final_image = final_image @ transform_matrix.T
-
-    return final_image + np.mean(image_bw, axis=0)
-
 def compressImage():
     # img loading and transform in matrix
     image_raw = imread(".\\img\\photo.jpg")
+    print(image_raw.shape)
     plt.imshow(image_raw)
     plt.show()
 
@@ -57,11 +35,30 @@ def compressImage():
     plt.show()
 
     # pca usage
-    new_image = pca(image_bw.T, 65)
-    plt.imshow(new_image.T, cmap='gray')
+    # for 95 %
+    pca = PCA().fit(image_bw)
+    cum_var = np.cumsum(pca.explained_variance_ratio_)
+
+    k = np.where(cum_var >= 0.95)[0][0] + 1
+
+    cumulativeGraph(cum_var, 0, 95)
+
+    image_pca = PCA(n_components=k)
+    reduced_image = image_pca.fit_transform(image_bw)
+    reconstructed_image = image_pca.inverse_transform(reduced_image)
+
+    plt.suptitle(f"Reconstruction {k} components", fontsize=16)
+    plt.imshow(reconstructed_image, cmap='gray')
     plt.show()
 
-    new_image = pca(image_bw, 80)
-    plt.imshow(new_image, cmap='gray')
-    plt.show()
+    # different components
+    comp_list = [5, 25, 100, 180]
 
+    for comp in comp_list:
+        image_pca = PCA(n_components=comp)
+        reduced_image = image_pca.fit_transform(image_bw)
+        reconstructed_image = image_pca.inverse_transform(reduced_image)
+
+        plt.suptitle(f"Reconstruction {comp} components", fontsize=16)
+        plt.imshow(reconstructed_image, cmap='gray')
+        plt.show()

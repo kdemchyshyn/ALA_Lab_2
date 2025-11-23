@@ -11,7 +11,12 @@ def main():
     for el in eigen:
         print(f"{el[0]} : {el[1]}")
 
-    #Task 2
+    # Task 2
+    t2.compressImage()
+
+    # Task 3
+    message = "How to keep sanity when you want to die?"
+    t3.task3(message)
     return 0
 
 if __name__ == '__main__':
