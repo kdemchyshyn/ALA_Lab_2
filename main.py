@@ -15,7 +15,7 @@ def main():
     t2.compressImage()
 
     # Task 3
-    message = "How to keep sanity when you want to die?"
+    message = "Hello, grey rainy world. When will we see snow?"
     t3.task3(message)
     return 0
 

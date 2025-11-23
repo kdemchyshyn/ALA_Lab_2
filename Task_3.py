@@ -11,10 +11,9 @@ def encrypt_message(message, key_matrix):
 
 def decrypt_message(encrypted_vector, key_matrix):
 
-    inverse_key_matrix = np.linalg.inv(key_matrix)
-    eigenvalues, eigenvectors = np.linalg.eig(inverse_key_matrix)
-    diagonalized_key_matrix = np.dot(np.dot(eigenvectors, np.diag(eigenvalues)), np.linalg.inv(eigenvectors))
-    message_vector = np.dot(diagonalized_key_matrix, encrypted_vector)
+    eigenvalues, eigenvectors = np.linalg.eig(key_matrix)
+    inverse_diagonalized_key_matrix = np.dot(np.dot(eigenvectors, np.diag(1/eigenvalues)), np.linalg.inv(eigenvectors))
+    message_vector = np.dot(inverse_diagonalized_key_matrix, encrypted_vector)
     message_vector = np.round(message_vector).astype(int)
     message = ''.join(chr(x) for x in message_vector)
 
